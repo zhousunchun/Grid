@@ -1,7 +1,0 @@
-/home/chunchun/github/Grid/Grid/build/CMakeFiles/edit_cache.dir
-/home/chunchun/github/Grid/Grid/build/CMakeFiles/rebuild_cache.dir
-/home/chunchun/github/Grid/Grid/build/CMakeFiles/list_install_components.dir
-/home/chunchun/github/Grid/Grid/build/CMakeFiles/install.dir
-/home/chunchun/github/Grid/Grid/build/CMakeFiles/install/local.dir
-/home/chunchun/github/Grid/Grid/build/CMakeFiles/install/strip.dir
-/home/chunchun/github/Grid/Grid/build/CMakeFiles/grid.dir

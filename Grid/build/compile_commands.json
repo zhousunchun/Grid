@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/home/chunchun/github/Grid/Grid/build",
-  "command": "/usr/bin/c++     -g   -o CMakeFiles/grid.dir/main.cpp.o -c /home/chunchun/github/Grid/Grid/main.cpp",
-  "file": "/home/chunchun/github/Grid/Grid/main.cpp"
-}
-]
