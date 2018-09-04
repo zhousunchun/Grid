@@ -29,6 +29,7 @@ public:
     friend std::ostream & operator << (std::ostream & out, const Point & p)
     {
         out<< "[" << p._x << "," << p._y << "]";
+        return out;
     }
     
 public:
@@ -124,6 +125,25 @@ public:
         return _resolution;
     }
     
+    T** getGridData()
+    {
+        return _pData;
+    }
+    
+    friend std::ostream & operator << (std::ostream &out, const Grid& grid)
+    {
+        for(int i=0; i<grid._height;++i)
+        {
+            for (int j=0; j<grid._width; ++j)
+            {
+                out << grid._pData[i][j] <<" ";
+            }
+            out<< std::endl;
+        }
+        out<<std::endl;
+        return out;
+    }
+    
     /* print Grid in the console */
     void printGrid()
     {
@@ -150,27 +170,29 @@ private:
 };
 
 int main(int argc, char **argv) {
-    /* Point test
-    Point<int> p1(2,2);
-    Point<int> p2(p1);
-    std::cout<< p1<< std::endl;
-    std::cout << p2 << std::endl;
-    std::cout<<p1+p2<<std::endl;
-    std::cout<<p1-p2 <<std::endl;
-    std::cout<< p2.getX() << " " << p2.getY() <<  std::endl;
-    */
-    Grid<int> grid(Point<int>(0,0),5,5,20);
-    /*
-    std::cout<< grid.getPoint() << std::endl;
+    std::cout<<"Class Point Tests"<<std::endl;
+    Point<int> p1(2,2); // constructor function 1
+    Point<int> p2(p1); // constructor function 2
+    std::cout<< p1<< std::endl; //  overload operator <<  and insert point into stream
+    std::cout << p2 << std::endl; 
+    std::cout<<p1+p2<<std::endl; // overload operator +, and return the result of two point 
+    std::cout<<p1-p2 <<std::endl; // overload opeartor - 
+    std::cout<< p2.getX() << " " << p2.getY() <<  std::endl;  // test the getter function of Point class
+    
+    std::cout << std::endl;
+    std::cout << "Class Grid Tests" << std::endl;
+    
+    Grid<int> grid(Point<int>(0,0),5,5,20); //constructor function
+    std::cout<< grid.getPoint() << std::endl; // test the getter function of Grid Class
     std::cout << grid.getHeight() << std::endl;
     std::cout << grid.getWidth() << std::endl; 
     std::cout << grid.getResolution() << std::endl;
-    */
-   Point<double> p(-10,-40);
-    grid.setGridValue(p.getX(),p.getY());
+            
+    Point<double> p(-10,-40);
+    grid.setGridValue(p.getX(),p.getY()); // change the value in the grid
     
-    
-    grid.printGrid();
-    std::cout << grid.getGridValue(p.getX(), p.getY()) << std::endl;
+    std::cout<<grid<<std::endl; // overload opeator << to print the grid 
+    grid.printGrid(); // print grid 
+    std::cout << grid.getGridValue(p.getX(), p.getY()) << std::endl; // test getter fucntion of the Grid Class
     return 0;
 }

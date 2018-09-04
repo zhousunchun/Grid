@@ -1,0 +1,1 @@
+/usr/bin/c++   -g   CMakeFiles/grid.dir/main.cpp.o  -o grid -rdynamic 
