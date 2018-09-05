@@ -1,6 +1,7 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
+#include <memory.h>
 
 /*
  * Point class
@@ -60,8 +61,8 @@ public:
     { 
         // allocate map data 
         _pData = new T*[_height];
-        for(int i=0; i< height; ++i)
-            _pData[i] =  new T[_width];
+        for(int i=0; i< _height; ++i)
+            _pData[i] =  new T[_width]();
     }
     
     
@@ -143,20 +144,27 @@ public:
         out<<std::endl;
         return out;
     }
-    
-    /* print Grid in the console */
-    void printGrid()
+
+    bool isInBoundary(Point<T> & p)
     {
-        for(int i=0; i<_height; ++i)
-        {
-            for(int j = 0; j<_width; ++j)
-            {
-                std::cout<< _pData[i][j] << " ";
-            }
-            std::cout << std::endl;
-        }
-        std::cout<<std::endl;
+        return (p.getX() <= _point.getX() + _width/2 && p.getX() >= _point.getX() - _width/2);
     }
+
+    void extendGrid()
+    {
+        memset(_pData,0,sizeof(_pData));
+        for(int i =0 ; i < _height; ++i)
+            delete[] _pData[i];
+        delete[] _pData;
+
+        _width = 2*_width+1;
+        _height = 2*_height+1;
+
+        _pData = new T*[_height];
+        for(int i=0; i< _height; ++i)
+            _pData[i] =  new T[_width]();
+    }
+
     
 private:
     
@@ -182,17 +190,26 @@ int main(int argc, char **argv) {
     std::cout << std::endl;
     std::cout << "Class Grid Tests" << std::endl;
     
-    Grid<int> grid(Point<int>(0,0),5,5,20); //constructor function
+    Grid<int> grid(Point<int>(0,0),5,5,1); //constructor function
+    std::cout << grid <<std::endl;
     std::cout<< grid.getPoint() << std::endl; // test the getter function of Grid Class
     std::cout << grid.getHeight() << std::endl;
-    std::cout << grid.getWidth() << std::endl; 
+    std::cout << grid.getWidth() << std::endl;
     std::cout << grid.getResolution() << std::endl;
-            
-    Point<double> p(-10,-40);
+    Point<double> p(-1,-2);
     grid.setGridValue(p.getX(),p.getY()); // change the value in the grid
-    
-    std::cout<<grid<<std::endl; // overload opeator << to print the grid 
-    grid.printGrid(); // print grid 
-    std::cout << grid.getGridValue(p.getX(), p.getY()) << std::endl; // test getter fucntion of the Grid Class
+
+    std::cout<<grid<<std::endl; // overload opeator << to print the grid
+//    std::cout << grid.getGridValue(p.getX(), p.getY()) << std::endl; // test getter fucntion of the Grid Class
+//    Point<int> p3(-2,-2);
+//    std::cout << grid.isInBoundary(p3);
+    grid.extendGrid();
+    std::cout<< grid.getPoint() << std::endl; // test the getter function of Grid Class
+    std::cout << grid.getHeight() << std::endl;
+    std::cout << grid.getWidth() << std::endl;
+    std::cout << grid.getResolution() << std::endl;
+    grid.setGridValue(p.getX(),p.getY());
+    std::cout<<grid<<std::endl;
+
     return 0;
 }
