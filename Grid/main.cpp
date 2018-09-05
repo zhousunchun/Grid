@@ -2,6 +2,8 @@
 #include <memory>
 #include <math.h>
 #include <memory.h>
+#include <vector> 
+#include <cstdlib>
 
 /*
  * Point class
@@ -86,7 +88,23 @@ public:
         int index = (yIndex - pDataYIndexStart)*_width + (xIndex - pDataXIndexStart);
         return index;
     }
+    int pDataIndexCalc(const int & xIndex, const int & yIndex)
+    {
+        int pDataXIndexStart = _point.getX() - _width/2;
+        int pDataYIndexStart = _point.getY() - _height/2;
+        
+        int index = (yIndex - pDataXIndexStart) * _width + (xIndex - pDataXIndexStart);
+        return index;
+    }
     
+    void setGridValueByIndex(const int & index)
+    {
+        std::cout<<index<<std::endl;
+        int col = index %_width;
+        int row = index /_width;
+        std::cout<< col << " "<<row<<" " << _width<<std::endl;
+        _pData[row][col] = 1;
+    }
     /* Convert physical point into grid coordinate, and change corresponding grid' values */ 
     void setGridValue(const double &xMeter, const double & yMeter)
     {
@@ -152,11 +170,10 @@ public:
 
     void extendGrid()
     {
-        memset(_pData,0,sizeof(_pData));
         for(int i =0 ; i < _height; ++i)
             delete[] _pData[i];
         delete[] _pData;
-
+        
         _width = 2*_width+1;
         _height = 2*_height+1;
 
@@ -164,7 +181,77 @@ public:
         for(int i=0; i< _height; ++i)
             _pData[i] =  new T[_width]();
     }
-
+    
+    void bresenhamLine(Point<int> & p1, Point<int> & p2,  std::vector<Point<int> > & points)
+    {
+        int x1 = p1.getX();
+        int y1 = p1.getY();
+        int x2 = p2.getX();
+        int y2 = p2.getY();
+        points.clear();
+        
+        bool steep = abs(y2-y1) > abs(x2-x1);
+        if(steep)
+        {
+            std::swap(x1,y1);
+            std::swap(x2,y2);
+        }
+        if(x1 > x2)
+        {
+            std::swap(x1,x2);
+            std::swap(y1,y2);
+        }
+        
+        int deltaX = x2-x1;
+        int deltaY = abs(y2-y1);
+        int error = 0;
+        int ystep;
+        int y = y1;
+        
+        if(y1<y2)
+        {
+            ystep = 1;
+        }
+        else{
+            ystep = -1;
+        }
+        
+        int pointX;
+        int pointY;
+        
+        for(int x = x1; x< x2; ++x)
+        {
+            if(steep)
+            {
+                pointX = y;
+                pointY = x;
+            }
+            else
+            {
+                pointX = x;
+                pointY = y;
+            }
+            
+            error += deltaY;
+            if(2*error >= deltaX)
+            {
+                y+= ystep;
+                error -= deltaX;
+            }
+            points.push_back(Point<int>(pointX,pointY));
+        }
+    }
+    
+    void updateMap(std::vector<Point<int> > points)
+    {
+        std::vector<Point<int> >::iterator it;
+        for (it = points.begin(); it!=points.end(); ++it)
+        {
+            std::cout<<*it<<std::endl;
+            int index = pDataIndexCalc(it->getX(), it->getY());
+            setGridValueByIndex(index);
+        }
+    }
     
 private:
     
@@ -190,26 +277,32 @@ int main(int argc, char **argv) {
     std::cout << std::endl;
     std::cout << "Class Grid Tests" << std::endl;
     
-    Grid<int> grid(Point<int>(0,0),5,5,1); //constructor function
+    Grid<int> grid(Point<int>(0,0),40,40,1); //constructor function
     std::cout << grid <<std::endl;
     std::cout<< grid.getPoint() << std::endl; // test the getter function of Grid Class
     std::cout << grid.getHeight() << std::endl;
     std::cout << grid.getWidth() << std::endl;
     std::cout << grid.getResolution() << std::endl;
-    Point<double> p(-1,-2);
+    Point<double> p(1,0);
     grid.setGridValue(p.getX(),p.getY()); // change the value in the grid
 
     std::cout<<grid<<std::endl; // overload opeator << to print the grid
 //    std::cout << grid.getGridValue(p.getX(), p.getY()) << std::endl; // test getter fucntion of the Grid Class
 //    Point<int> p3(-2,-2);
 //    std::cout << grid.isInBoundary(p3);
-    grid.extendGrid();
-    std::cout<< grid.getPoint() << std::endl; // test the getter function of Grid Class
-    std::cout << grid.getHeight() << std::endl;
-    std::cout << grid.getWidth() << std::endl;
-    std::cout << grid.getResolution() << std::endl;
-    grid.setGridValue(p.getX(),p.getY());
+//     grid.extendGrid();
+//     std::cout<< grid.getPoint() << std::endl; // test the getter function of Grid Class
+//     std::cout << grid.getHeight() << std::endl;
+//     std::cout << grid.getWidth() << std::endl;
+//     std::cout << grid.getResolution() << std::endl;
+//     grid.setGridValue(p.getX(),p.getY());
+//     std::cout<<grid<<std::endl;
+    
+    Point<int> pointStart(0,0), pointEnd(10,5);
+    std::vector<Point<int> > points;
+    grid.bresenhamLine(pointStart,pointEnd, points);
+    std::cout<< points.size()<<std::endl;
+    grid.updateMap(points);
     std::cout<<grid<<std::endl;
-
     return 0;
 }
