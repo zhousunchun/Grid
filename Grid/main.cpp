@@ -61,19 +61,22 @@ public:
     Grid (): _point(0,0),_width(0),_height(0),_resolution(0),_pData(NULL) {}
     Grid(const Point<T> &p, int width, int height, int resolution) : _point(p), _width(width), _height(height), _resolution(resolution)
     { 
-        // allocate map data 
-        _pData = new T*[_height];
-        for(int i=0; i< _height; ++i)
-            _pData[i] =  new T[_width]();
+        if(0 == _height || 0 == _width)
+            _pData = NULL;
+        else
+        {
+            _pData = new int[_width*_height]();
+        }
     }
-    
     
     ~Grid()
     {
-        // delete pData in Destructor
-        for(int i =0 ; i < _height; ++i) 
-            delete[] _pData[i];
-        delete[] _pData;
+        if(_pData == NULL)
+            return ;
+        else
+        {
+            delete[] _pData;
+        }
     }
     
 public:
@@ -88,37 +91,46 @@ public:
         int index = (yIndex - pDataYIndexStart)*_width + (xIndex - pDataXIndexStart);
         return index;
     }
-    int pDataIndexCalc(const int & xIndex, const int & yIndex)
-    {
-        int pDataXIndexStart = _point.getX() - _width/2;
-        int pDataYIndexStart = _point.getY() - _height/2;
-        
-        int index = (yIndex - pDataXIndexStart) * _width + (xIndex - pDataXIndexStart);
-        return index;
-    }
-    
-    void setGridValueByIndex(const int & index)
-    {
-        std::cout<<index<<std::endl;
-        int col = index %_width;
-        int row = index /_width;
-        std::cout<< col << " "<<row<<" " << _width<<std::endl;
-        _pData[row][col] = 1;
-    }
+//     int pDataIndexCalc(const int & xIndex, const int & yIndex)
+//     {
+//         Point<int> point(xIndex,yIndex);
+//         int incrementNumberLimits = 5;
+//         int incrementNumber = 0;
+//         while(!isInBoundary(point))
+//         {
+//             extendGrid();
+//             if(incrementNumber >incrementNumberLimits) break;
+//             ++incrementNumber;
+//         }
+//         int pDataXIndexStart = _point.getX() - _width/2;
+//         int pDataYIndexStart = _point.getY() - _height/2;
+//         
+//         int index = (yIndex - pDataYIndexStart) * _width + (xIndex - pDataXIndexStart);
+//         return index;
+//     }
+//     
+//     void setGridValueByIndex(const int & index)
+//     {
+//         
+//         int col = index %_width;
+//         int row = index /_width;
+//         
+//         _pData[row][col] = 1;
+//     }
     /* Convert physical point into grid coordinate, and change corresponding grid' values */ 
     void setGridValue(const double &xMeter, const double & yMeter)
     {
+        
         int index = worldToGrid(xMeter,yMeter);
-        int col = index % _width;
-        int row = index / _width;
-        _pData[row][col]  = 1;
+        std::cout<<"index"<< index<<std::endl;
+        *(_pData + index) = 1;
     }
    
     /* Obtain corresponding grid value */
     int getGridValue(const double &xMeter, const double& yMeter)
     {
         int index  = worldToGrid(xMeter,yMeter);
-        return _pData[index/_width][index%_width];
+        return *(_pData+index);
     }
     
     
@@ -144,18 +156,19 @@ public:
         return _resolution;
     }
     
-    T** getGridData()
+    int*  getGridData()
     {
         return _pData;
     }
     
     friend std::ostream & operator << (std::ostream &out, const Grid& grid)
     {
+        int * pData = grid._pData;
         for(int i=0; i<grid._height;++i)
         {
             for (int j=0; j<grid._width; ++j)
             {
-                out << grid._pData[i][j] <<" ";
+                out << *(pData+i*grid._width+j) << " ";
             }
             out<< std::endl;
         }
@@ -170,16 +183,10 @@ public:
 
     void extendGrid()
     {
-        for(int i =0 ; i < _height; ++i)
-            delete[] _pData[i];
         delete[] _pData;
-        
-        _width = 2*_width+1;
+        _width = 2*_width +1;
         _height = 2*_height+1;
-
-        _pData = new T*[_height];
-        for(int i=0; i< _height; ++i)
-            _pData[i] =  new T[_width]();
+        _pData = new int[_width*_height]();
     }
     
     void bresenhamLine(Point<int> & p1, Point<int> & p2,  std::vector<Point<int> > & points)
@@ -247,9 +254,15 @@ public:
         std::vector<Point<int> >::iterator it;
         for (it = points.begin(); it!=points.end(); ++it)
         {
-            std::cout<<*it<<std::endl;
-            int index = pDataIndexCalc(it->getX(), it->getY());
-            setGridValueByIndex(index);
+            std::cout<< *it<<std::endl;
+            std::cout<< "isInBoundary" << isInBoundary(*it) << std::endl;
+            while(!isInBoundary(*it))
+            {
+                extendGrid();
+            }
+//             int index = pDataIndexCalc(it->getX(), it->getY());
+//             setGridValueByIndex(index);
+            setGridValue(it->getX(),it->getY());
         }
     }
     
@@ -261,32 +274,34 @@ private:
     int _width;
     int _height;
     int _resolution;
-    T** _pData;
+//     T** _pData;
+    int* _pData;
 };
 
-int main(int argc, char **argv) {
-    std::cout<<"Class Point Tests"<<std::endl;
-    Point<int> p1(2,2); // constructor function 1
-    Point<int> p2(p1); // constructor function 2
-    std::cout<< p1<< std::endl; //  overload operator <<  and insert point into stream
-    std::cout << p2 << std::endl; 
-    std::cout<<p1+p2<<std::endl; // overload operator +, and return the result of two point 
-    std::cout<<p1-p2 <<std::endl; // overload opeartor - 
-    std::cout<< p2.getX() << " " << p2.getY() <<  std::endl;  // test the getter function of Point class
+int main(int argc, char **argv) 
+{
+//     std::cout<<"Class Point Tests"<<std::endl;
+//     Point<int> p1(2,2); // constructor function 1
+//     Point<int> p2(p1); // constructor function 2
+//     std::cout<< p1<< std::endl; //  overload operator <<  and insert point into stream
+//     std::cout << p2 << std::endl; 
+//     std::cout<<p1+p2<<std::endl; // overload operator +, and return the result of two point 
+//     std::cout<<p1-p2 <<std::endl; // overload opeartor - 
+//     std::cout<< p2.getX() << " " << p2.getY() <<  std::endl;  // test the getter function of Point class
+//     
+//     std::cout << std::endl;
+//     std::cout << "Class Grid Tests" << std::endl;
     
-    std::cout << std::endl;
-    std::cout << "Class Grid Tests" << std::endl;
-    
-    Grid<int> grid(Point<int>(0,0),40,40,1); //constructor function
-    std::cout << grid <<std::endl;
-    std::cout<< grid.getPoint() << std::endl; // test the getter function of Grid Class
-    std::cout << grid.getHeight() << std::endl;
-    std::cout << grid.getWidth() << std::endl;
-    std::cout << grid.getResolution() << std::endl;
-    Point<double> p(1,0);
-    grid.setGridValue(p.getX(),p.getY()); // change the value in the grid
+    Grid<int> grid(Point<int>(0,0),11,11,1); //constructor function
+//     std::cout << grid <<std::endl;
+//     std::cout<< grid.getPoint() << std::endl; // test the getter function of Grid Class
+//     std::cout << grid.getHeight() << std::endl;
+//     std::cout << grid.getWidth() << std::endl;
+//     std::cout << grid.getResolution() << std::endl;
+//     Point<double> p(1,0);
+//     grid.setGridValue(p.getX(),p.getY()); // change the value in the grid
 
-    std::cout<<grid<<std::endl; // overload opeator << to print the grid
+//    std::cout<<grid<<std::endl; // overload opeator << to print the grid
 //    std::cout << grid.getGridValue(p.getX(), p.getY()) << std::endl; // test getter fucntion of the Grid Class
 //    Point<int> p3(-2,-2);
 //    std::cout << grid.isInBoundary(p3);
@@ -297,11 +312,13 @@ int main(int argc, char **argv) {
 //     std::cout << grid.getResolution() << std::endl;
 //     grid.setGridValue(p.getX(),p.getY());
 //     std::cout<<grid<<std::endl;
-    
-    Point<int> pointStart(0,0), pointEnd(10,5);
+//     Point<int> point(2,-3);
+//     std::cout << grid.worldToGrid(point.getX(),point.getY())<< std::endl;
+//     grid.setGridValue(point.getX(), point.getY());
+//     std::cout<<grid.getGridValue(point.getX(),point.getY()) << std::endl;
+    Point<int> pointStart(0,0), pointEnd(6,-6);
     std::vector<Point<int> > points;
     grid.bresenhamLine(pointStart,pointEnd, points);
-    std::cout<< points.size()<<std::endl;
     grid.updateMap(points);
     std::cout<<grid<<std::endl;
     return 0;
